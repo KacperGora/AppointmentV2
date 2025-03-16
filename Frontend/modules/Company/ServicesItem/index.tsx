@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { api, formatDuration, formatPrice } from '@helpers';
-import { QueryObserverResult, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { ServiceType } from '@types';
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Reanimated, { SharedValue, useAnimatedStyle } from 'react-native-reanimated';
@@ -15,8 +15,7 @@ const RightAction: React.FC<{
   drag: SharedValue<number>;
   close: () => void;
   serviceId: string;
-  refetchFn: () => Promise<QueryObserverResult<ServiceType[], Error>>;
-}> = ({ prog, drag, close, serviceId, refetchFn }) => {
+}> = ({ prog, drag, close, serviceId }) => {
   const styleAnimation = useAnimatedStyle(() => {
     return {
       transform: [{ translateX: drag.value + 50 }],
@@ -28,7 +27,6 @@ const RightAction: React.FC<{
   const deleteSerivceHandler = async () => {
     await api.post('/company/deleteService', { id: serviceId });
     await queryClient.invalidateQueries({ queryKey: ['services', 'getEventsFormOptions'] });
-    await refetchFn();
   };
 
   useEffect(() => {
@@ -48,18 +46,8 @@ const RightAction: React.FC<{
   );
 };
 
-type ServiceItemProps = ServiceType & {
-  refetchFn: () => Promise<QueryObserverResult<ServiceType[], Error>>;
-};
-
-const ServiceItem: React.FC<ServiceItemProps> = ({
-  duration,
-  name,
-  price,
-  description,
-  id,
-  refetchFn,
-}) => {
+type ServiceItemProps = ServiceType;
+const ServiceItem: React.FC<ServiceItemProps> = ({ duration, name, price, description, id }) => {
   const swipeableRef = useRef<any>(null);
 
   const closeSwipeable = () => {
@@ -74,13 +62,7 @@ const ServiceItem: React.FC<ServiceItemProps> = ({
       friction={2}
       enableTrackpadTwoFingerGesture
       renderRightActions={(prog, drag) => (
-        <RightAction
-          prog={prog}
-          drag={drag}
-          close={closeSwipeable}
-          serviceId={id}
-          refetchFn={refetchFn}
-        />
+        <RightAction prog={prog} drag={drag} close={closeSwipeable} serviceId={id} />
       )}
     >
       <View style={styles.container}>

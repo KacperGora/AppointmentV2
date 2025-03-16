@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TextBase, View } from 'react-native';
 
 import { HelperText, TextInput as PaperInput } from 'react-native-paper';
 import { beautyTheme } from 'theme/theme';
@@ -23,6 +23,7 @@ const Input: React.FC<TextInputWithCounterProps> = ({
   keyboardType = 'default',
   errorMessage,
   isPassword = false,
+  withCounter = true,
 }) => {
   const [isSecureText, setIsSecureText] = useState(isPassword);
 
@@ -31,7 +32,7 @@ const Input: React.FC<TextInputWithCounterProps> = ({
   };
 
   return (
-    <View style={[style]}>
+    <View style={[styles.inputWrapper, style]}>
       <PaperInput
         style={styles.input}
         label={label}
@@ -56,7 +57,7 @@ const Input: React.FC<TextInputWithCounterProps> = ({
           ) : undefined
         }
       />
-      {Boolean(value?.length && maxLength) && (
+      {Boolean(value?.length && maxLength && withCounter) && (
         <Text style={styles.counter}>
           {value.length}/{maxLength}
         </Text>
@@ -79,11 +80,17 @@ const styles = StyleSheet.create({
     backgroundColor: white,
     color: onPrimaryContainer,
     borderColor: outline,
+    position: 'relative',
+  },
+  inputWrapper: {
+    width: '100%',
+    position: 'relative',
   },
   counter: {
-    fontSize: 12,
-    textAlign: 'right',
-    marginTop: 4,
+    fontSize: beautyTheme.fontSizes.small,
+    position: 'absolute',
+    right: 12,
+    bottom: 12,
   },
 });
 

@@ -1,8 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Animated, FlatList, StyleSheet, Text } from 'react-native';
 
 import { ScreenWrapper } from '@components';
+import { apiRoutes } from '@helpers';
+import { RefetchOptions, useQuery, useQueryClient } from '@tanstack/react-query';
 import { beautyTheme } from '@theme';
 import { CustomerType } from '@types';
 import NoData from 'components/NoData';
@@ -11,6 +13,7 @@ import { Searchbar, useTheme } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import CustomerDetailListRow from '../CustomerDetailListRow';
+import CustomerForm from '../CustomerForm';
 import { styles } from './style';
 
 type CustomerListType = {
@@ -18,19 +21,24 @@ type CustomerListType = {
   isSearchbarVisible: boolean;
   onSearchbarClose: () => void;
   isAddCustomerFormVisible: boolean;
+  onRefresh: (options?: RefetchOptions) => Promise<void>;
+  onAddCustomerFormToggle: () => void;
 };
+
 const CustomerList: React.FC<CustomerListType> = ({
   clients,
   isSearchbarVisible,
   onSearchbarClose,
   isAddCustomerFormVisible,
+  onRefresh,
+  onAddCustomerFormToggle,
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
   const searchBarOpacity = useRef(new Animated.Value(0)).current;
-
   const [searchQuery, setSearchQuery] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
 
   const searchHandler = (value: string) => {
     setSearchQuery(value);
@@ -41,9 +49,19 @@ const CustomerList: React.FC<CustomerListType> = ({
     onSearchbarClose();
   };
 
-  const renderItem = ({ item }: { item: CustomerType }) => {
-    return <CustomerDetailListRow customer={item} />;
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await onRefresh();
+    setRefreshing(false);
   };
+
+  const renderItem = useMemo(
+    () =>
+      ({ item }: { item: CustomerType }) => {
+        return <CustomerDetailListRow customer={item} />;
+      },
+    [],
+  );
 
   useEffect(() => {
     Animated.timing(searchBarOpacity, {
@@ -52,6 +70,10 @@ const CustomerList: React.FC<CustomerListType> = ({
       useNativeDriver: true,
     }).start();
   }, [isSearchbarVisible, searchBarOpacity]);
+
+  if (isAddCustomerFormVisible) {
+    return <CustomerForm onClose={onAddCustomerFormToggle} />;
+  }
 
   return (
     <ScreenWrapper>
@@ -79,6 +101,8 @@ const CustomerList: React.FC<CustomerListType> = ({
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
         ListEmptyComponent={NoData}
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
       />
     </ScreenWrapper>
   );

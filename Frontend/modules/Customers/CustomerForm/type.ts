@@ -6,6 +6,5 @@ export interface Client {
 }
 
 export type CustomerComponentProps = {
-  onSubmit: () => Promise<void>;
   onClose?: () => void;
 };

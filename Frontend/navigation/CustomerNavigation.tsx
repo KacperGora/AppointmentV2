@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { Keyboard, TouchableOpacity, View } from 'react-native';
 
 import { api, apiRoutes, SCREEN_NAME_CONFIG } from '@helpers';
 import { CustomerList, Statistics } from '@modules';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import { createStackNavigator } from '@react-navigation/stack';
-import { useQuery } from '@tanstack/react-query';
+import { useNavigation } from '@react-navigation/native';
+import { RefetchOptions, useQuery } from '@tanstack/react-query';
 import { beautyTheme } from '@theme';
 import { CustomerType } from '@types';
 import { useTranslation } from 'react-i18next';
@@ -18,7 +18,6 @@ const {
   client: { getList },
 } = apiRoutes;
 
-const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
 
 const HeaderRight = ({
@@ -52,6 +51,7 @@ export const CustomerListWithDrawer = () => {
   const { t } = useTranslation();
   const [searchbarOpen, setSearchbarOpen] = useState(false);
   const [isAddCustomerFormVisible, setAddCustomerFormVisible] = useState(false);
+  const navigation = useNavigation();
 
   const { data: clients = [], refetch } = useQuery<CustomerType[]>({
     queryKey: [getList.queryKey],
@@ -61,23 +61,37 @@ export const CustomerListWithDrawer = () => {
     },
   });
 
+  const fetchClientList = async (options?: RefetchOptions) => {
+    await refetch(options);
+  };
   const toggleForm = () => {
+    if (isAddCustomerFormVisible) {
+      refetch();
+    }
     setAddCustomerFormVisible((prev) => !prev);
   };
-
-  const renderHeaderRight = () => (
-    <HeaderRight onAddPress={toggleForm} onSearchPress={handleSearchbarToggle} />
-  );
 
   const handleSearchbarToggle = () => {
     Keyboard.dismiss();
     setSearchbarOpen((prev) => !prev);
   };
 
-  const handleFormClose = async () => {
-    Keyboard.dismiss();
-    await refetch();
-  };
+  const renderHeaderRight = useMemo(
+    () => () => <HeaderRight onAddPress={toggleForm} onSearchPress={handleSearchbarToggle} />,
+    [toggleForm, handleSearchbarToggle],
+  );
+
+  useEffect(() => {
+    const handleBlur = () => {
+      setAddCustomerFormVisible(false);
+    };
+
+    navigation.addListener('blur', handleBlur);
+
+    return () => {
+      navigation.removeListener('blur', handleBlur);
+    };
+  }, [navigation]);
 
   return (
     <Drawer.Navigator
@@ -97,6 +111,8 @@ export const CustomerListWithDrawer = () => {
             isSearchbarVisible={searchbarOpen}
             onSearchbarClose={handleSearchbarToggle}
             isAddCustomerFormVisible={isAddCustomerFormVisible}
+            onAddCustomerFormToggle={toggleForm}
+            onRefresh={fetchClientList}
           />
         )}
       </Drawer.Screen>

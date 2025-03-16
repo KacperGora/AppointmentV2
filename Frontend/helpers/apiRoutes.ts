@@ -3,6 +3,7 @@ export const apiRoutes = {
     getList: { path: '/client/getClient', queryKey: 'clientList' },
     delete: { path: '/client/delete', queryKey: 'deleteClient' },
     addClient: { path: '/client/addClient', queryKey: 'addClient' },
+    getStatistics: { path: '/client/statistic', queryKey: 'clientStatistics' },
   },
   event: {
     create: '/event/create',

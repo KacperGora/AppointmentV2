@@ -113,6 +113,9 @@ export const pl = {
       validPrice: 'Wartość musi być liczbą dodatnią z dwoma miejscami po przecinku',
       mutlitleBy15: 'Wartość musi być wielokrotnością 15',
       mustBeInteger: 'Wartość musi być liczbą całkowitą',
+      nameIsRequied: 'Imię jest wymagane',
+      lastNameIsRequied: 'Nazwisko jest wymagane',
+      phoneNumberMustBeExact: 'Numer telefonu musi mieć dokładnie 9 cyfr',
     },
     filters: {
       search: 'Szukaj',
@@ -126,6 +129,13 @@ export const pl = {
       deletetionSuccess: 'Klient został usunięty',
       deletionError: 'Wystąpił błąd podczas usuwania klienta',
       deletionConfirmation: 'Czy na pewno chcesz usunąć klienta',
+      mostValuableClients: 'Najbardziej wartościowi klienci',
+      totalCustomers: 'Liczba klientów',
+      newCustomers: 'Nowi klienci',
+      thisWeek: 'W tym tygodniu {{ count }}',
+      thisMonth: 'W tym miesiącu {{ count }}',
+      thisYear: 'W tym roku',
+      newestCustomer: 'Najnowszy klient',
     },
     company: {
       dashboard: 'Pulpit',
