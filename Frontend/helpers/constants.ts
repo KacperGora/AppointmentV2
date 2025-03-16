@@ -1,7 +1,3 @@
-import { CustomerList } from '@modules';
-import { Calendar } from '@views';
-import i18next from 'i18next';
-
 export const DEFAULT_DATE_FORMAT = 'DD/MM/YY';
 export const DATE_FORMAT_YYYY_MM_DD = 'YYYY-MM-DD';
 export const DATE_FORMAT_MMM_YYYY = 'MMM YYYY';
@@ -14,7 +10,10 @@ export const LOCALE_PL = 'pl';
 export const HOUR_CELL_WIDTH = 60;
 
 export const DEFAULT_CURRENCY = 'PLN';
-
+export const SORT_DIRECTION = {
+  ASC: 'ASC' as const,
+  DESC: 'DESC' as const,
+};
 export const SCREEN_NAME_CONFIG = {
   Login: 'Login' as const,
   Register: 'Register' as const,

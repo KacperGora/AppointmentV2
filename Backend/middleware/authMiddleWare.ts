@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import { SECRET_KEY } from '../config/env';
 
 export interface User {
@@ -15,18 +15,22 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
   }
 
   if (!SECRET_KEY) {
-    return res.status(500).json({ error: 'SECRET_KEY_NOT_DEFINED' });
+    console.error('SECRET_KEY is not defined');
+    return res.status(500).json({ error: 'INTERNAL_SERVER_ERROR' });
   }
 
   jwt.verify(token, SECRET_KEY, (err, decoded) => {
     if (err) {
       return res.status(403).json({ error: 'INCORRECT_TOKEN' });
     }
-    if (!decoded || typeof decoded !== 'object' || !('id' in decoded)) {
+
+    const payload = decoded as JwtPayload;
+
+    if (!payload?.id) {
       return res.status(403).json({ error: 'INVALID_TOKEN_STRUCTURE' });
     }
 
-    req.user = { id: decoded.id } as User;
+    req.user = { id: payload.id } as User;
     next();
   });
 };

@@ -2,6 +2,7 @@ import React from 'react';
 
 import { StyleSheet, Text, View } from 'react-native';
 
+import { beautyTheme } from '@theme';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const FormTitle: React.FC<{ title: string; onClose?: () => void }> = ({ title, onClose }) => {
@@ -21,7 +22,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBlock: beautyTheme.spacing.xl,
   },
   title: {
     fontSize: 24,

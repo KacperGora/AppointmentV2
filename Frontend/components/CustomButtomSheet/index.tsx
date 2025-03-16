@@ -158,19 +158,21 @@ const CustomBottomSheet: React.FC<CustomBottomSheetPropsType> = ({
       ]}
       {...panResponder.panHandlers}
     >
-      <View style={[styles.handleContainer]}>
-        <View
-          style={[
-            styles.handle,
-            currentSnapIndex === 1 && {
-              backgroundColor: '#fff',
-              shadowColor: beautyTheme.colors.onBackground,
-              shadowOffset: { height: 2, width: 4 },
-              shadowOpacity: 0.5,
-            },
-          ]}
-        />
-      </View>
+      {bottomSheetSnapPoints?.length > 1 && (
+        <View style={[styles.handleContainer]}>
+          <View
+            style={[
+              styles.handle,
+              currentSnapIndex === 1 && {
+                backgroundColor: '#fff',
+                shadowColor: beautyTheme.colors.onBackground,
+                shadowOffset: { height: 2, width: 4 },
+                shadowOpacity: 0.5,
+              },
+            ]}
+          />
+        </View>
+      )}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.select({ ios: 100, android: 80 })}

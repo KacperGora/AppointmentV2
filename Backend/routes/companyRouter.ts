@@ -4,7 +4,6 @@ import { authenticateToken } from '../middleware/authMiddleWare'
 
 const companyRouter = Router()
 
-companyRouter.use(authenticateToken)
 companyRouter.get('/calculateIncome', getEventsIncome)
 companyRouter.get('/getServices', getServices)
 companyRouter.post('/addService', addService)

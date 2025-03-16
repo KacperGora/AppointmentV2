@@ -10,4 +10,5 @@ export interface TextInputWithCounterProps {
   keyboardType?: 'default' | 'numeric' | 'email-address' | 'phone-pad';
   errorMessage?: string;
   isPassword?: boolean;
+  withCounter?: boolean;
 }

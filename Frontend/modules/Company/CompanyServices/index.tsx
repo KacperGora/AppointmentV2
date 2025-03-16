@@ -4,8 +4,8 @@ import { StyleSheet, View } from 'react-native';
 import { FlatList } from 'react-native';
 
 import { Loader } from '@components';
-import { api } from '@helpers';
-import { QueryObserverResult, RefetchOptions, useQuery } from '@tanstack/react-query';
+import { api, SORT_DIRECTION } from '@helpers';
+import { useQuery } from '@tanstack/react-query';
 import { ServiceType } from '@types';
 import { debounce } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +13,7 @@ import { Searchbar } from 'react-native-paper';
 import { colors } from 'theme/theme';
 
 import ServiceItem from '../ServicesItem';
+import { PayloadType } from './type';
 
 const fetchServices = async (payload: { sortOrder: string; sortBy: string; search?: string }) => {
   try {
@@ -21,15 +22,8 @@ const fetchServices = async (payload: { sortOrder: string; sortBy: string; searc
     });
     return data;
   } catch (error) {
-    console.error('Error fetching services:', error);
     throw new Error('Failed to fetch services');
   }
-};
-
-type PayloadType = {
-  sortOrder: 'ASC' | 'DESC';
-  sortBy: keyof ServiceType;
-  search?: string;
 };
 
 const CompanyServices = () => {
@@ -37,14 +31,13 @@ const CompanyServices = () => {
 
   const [searchText, setSearchText] = useState('');
   const [payload, setPayload] = useState<PayloadType>({
-    sortOrder: 'DESC',
+    sortOrder: SORT_DIRECTION.ASC,
     sortBy: 'name',
   });
 
-  const { data, isLoading, refetch } = useQuery<ServiceType[]>({
-    queryKey: ['services', payload],
+  const { data, isLoading } = useQuery<ServiceType[]>({
+    queryKey: ['services', payload.search || '', payload.sortBy, payload.sortOrder],
     queryFn: () => fetchServices(payload),
-    enabled: true,
   });
 
   const debouncedHandleFiltersChange = useCallback(
@@ -59,14 +52,8 @@ const CompanyServices = () => {
     debouncedHandleFiltersChange(text);
   };
 
-  const RenderServiceItem = ({
-    item,
-    refetchFn,
-  }: {
-    item: ServiceType;
-    refetchFn: (options?: RefetchOptions) => Promise<QueryObserverResult<ServiceType[], Error>>;
-  }) => {
-    return <ServiceItem {...item} refetchFn={refetchFn} />;
+  const RenderServiceItem = ({ item }: { item: ServiceType }) => {
+    return <ServiceItem {...item} />;
   };
 
   return (
@@ -83,8 +70,8 @@ const CompanyServices = () => {
         <FlatList
           style={styles.list}
           data={data}
-          keyExtractor={({ id }) => id}
-          renderItem={({ item }) => <RenderServiceItem item={item} refetchFn={refetch} />}
+          keyExtractor={({ id }) => id.toString()}
+          renderItem={({ item }) => <RenderServiceItem item={item} />}
         />
       )}
     </View>

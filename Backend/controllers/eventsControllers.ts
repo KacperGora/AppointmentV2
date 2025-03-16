@@ -1,22 +1,23 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { createDataBaseEvent, getDatabaseEvents, updateDatabaseEvent } from '../models/Event';
 import { handleError } from '../utils/authUtils';
 import { companyService } from '../services/companyService';
 import { clientService } from '../services/clientServices';
 import { errors } from '../config/errors';
+import { CustomError } from '../services/userService';
 
 export const eventsController = {
-  getEvents: async (req: Request, res: Response) => {
+  getEvents: async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user.id;
     try {
       const events = await getDatabaseEvents(userId);
       res.status(200).json(events);
     } catch (error) {
-      res.status(500).json({ message: 'Error getting events', error: (error as Error).message });
+      next(error);
     }
   },
 
-  createEvent: async (req: Request, res: Response) => {
+  createEvent: async (req: Request, res: Response, next: NextFunction) => {
     if (!req.body) {
       res.status(400).json({ message: 'Event data is required' });
       return;
@@ -30,29 +31,29 @@ export const eventsController = {
       await createDataBaseEvent({ ...req.body, userId: req.user.id });
       res.status(200).json({ message: 'Event created successfully' });
     } catch (error) {
-      res.status(500).json({ message: 'Error creating event', error: (error as Error).message });
+      next(error);
     }
   },
 
-  updateEvent: async (req: Request, res: Response) => {
+  updateEvent: async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user.id;
     const eventId = req.body.id;
     try {
       await updateDatabaseEvent({ ...req.body, userId, id: eventId });
       res.status(200).json({ message: 'Event updated successfully' });
     } catch (error) {
-      res.status(500).json({ message: 'Error updating event', error: (error as Error).message });
+      next(error);
     }
   },
 
-  getEventsFormOptions: async (req: Request, res: Response) => {
+  getEventsFormOptions: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.user.id;
       const services = (await companyService.getDatabaseServices(userId, {})) || [];
       const clients = (await clientService.getClients(userId, {})) || [];
       res.status(200).json({ services, clients });
     } catch (error) {
-      handleError(res, errors.INTERNAL_SERVER_ERROR);
+      next(error);
     }
   },
 };

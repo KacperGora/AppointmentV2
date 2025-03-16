@@ -1,47 +1,54 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Dimensions, StyleSheet, View } from 'react-native';
 
-import { Button, CustomBottomSheet, Input, KeyboardAvoidingContainer } from '@components';
+import { Button, CustomBottomSheet, Input } from '@components';
 import { api, apiRoutes } from '@helpers';
+import { useMutation } from '@tanstack/react-query';
 import FormTitle from 'components/FormTitle';
+import TextInputWithCounter from 'components/TextInputWithCounter';
 import { useTranslation } from 'react-i18next';
+import { colors } from 'theme/theme';
 
-import TextInputWithCounter from '../../../components/TextInputWithCounter';
-import { colors } from '../../../theme/theme';
 import { Client, CustomerComponentProps } from './type';
-import { customerFieldsConfig, initialCustomerFormValues } from './utils';
+import {
+  customerFieldsConfig,
+  initialCustomerFormValues,
+  validateCustomerFormSchema,
+} from './utils';
 
-const CustomerForm: React.FC<CustomerComponentProps> = ({ onSubmit, onClose }) => {
+const { height: WINDOW_HEIGHT } = Dimensions.get('window');
+
+const CustomerForm: React.FC<CustomerComponentProps> = ({ onClose = () => {} }) => {
   const { t } = useTranslation();
-
   const [clientForm, setClientForm] = useState<Client>(initialCustomerFormValues);
+
+  const { isPending, mutateAsync } = useMutation({
+    mutationFn: async (client: Client) => {
+      await api.post(apiRoutes.client.addClient.path, client);
+    },
+    onSuccess: () => {
+      onClose();
+    },
+    onError: (error) => {
+      // Alert.alert(error.message, error.message)
+    },
+  });
 
   const handleChange = (key: keyof Client) => (value: string) => {
     setClientForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const onClientSave = async (client: Client) => {
-    try {
-      await api.post(apiRoutes.client.addClient.path, client);
-    } catch (error: any) {
-      // setError(error.message);
-    } finally {
-      setClientForm(initialCustomerFormValues);
-    }
-  };
-
   const handleSubmit = async () => {
-    const { name: firstName, lastName, phoneNumber, notes } = clientForm;
-    await onClientSave({ name: firstName, lastName, phoneNumber, notes });
-    onSubmit();
+    if (!validateCustomerFormSchema(clientForm).success) return;
+    await mutateAsync(clientForm);
   };
 
   return (
-    <CustomBottomSheet isVisible onClose={() => {}}>
+    <CustomBottomSheet isVisible onClose={onClose} snapPoints={[WINDOW_HEIGHT * 0.25]}>
       <FormTitle title={t('client.addCustomer')} onClose={onClose} />
       <View style={styles.formWrapper}>
-        {customerFieldsConfig.map(({ placeholder, value, key, keyboardType }) => (
+        {customerFieldsConfig.map(({ placeholder, value, key, keyboardType, maxLength }) => (
           <Input
             key={key}
             style={styles.input}
@@ -49,6 +56,8 @@ const CustomerForm: React.FC<CustomerComponentProps> = ({ onSubmit, onClose }) =
             value={clientForm[value as keyof Client] || ''}
             onChangeText={handleChange(key as keyof Client)}
             keyboardType={keyboardType || 'default'}
+            maxLength={maxLength}
+            withCounter={false}
           />
         ))}
         <TextInputWithCounter
@@ -60,72 +69,24 @@ const CustomerForm: React.FC<CustomerComponentProps> = ({ onSubmit, onClose }) =
           style={styles.textArea}
         />
         <Button
-          label={t('form.save')}
+          label={isPending ? t('form.saving') : t('form.save')}
           onPress={handleSubmit}
+          isDisabled={isPending || !validateCustomerFormSchema(clientForm).success}
           style={styles.button}
           labelStyle={styles.buttonLabel}
         />
-
-        <Button
-          label={t('form.goBack')}
-          onPress={handleSubmit}
-          mode="outlined"
-          // style={styles.goBackButton}
-          // labelStyle={styles.goBackBtnLabel}
-        />
+        <Button label={t('form.goBack')} onPress={onClose} mode="outlined" />
       </View>
     </CustomBottomSheet>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    alignContent: 'flex-start',
-    justifyContent: 'flex-start',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    color: '#333',
-  },
-  input: {
-    backgroundColor: '#fff',
-  },
-  textArea: {
-    height: 100,
-  },
-  button: {
-    width: '100%',
-  },
-  buttonLabel: {
-    color: colors.white,
-    width: '100%',
-    textAlign: 'center',
-  },
-  goBackButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.gray,
-    width: '100%',
-    textAlign: 'center',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  goBackBtnLabel: {
-    color: colors.black,
-  },
-  formWrapper: {
-    gap: 16,
-  },
+  input: { backgroundColor: '#fff' },
+  textArea: { height: 100 },
+  button: { width: '100%' },
+  buttonLabel: { color: colors.white, textAlign: 'center' },
+  formWrapper: { gap: 16 },
 });
 
 export default CustomerForm;

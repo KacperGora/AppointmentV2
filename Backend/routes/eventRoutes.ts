@@ -6,7 +6,6 @@ const { createEvent, getEvents, getEventsFormOptions, updateEvent } = eventsCont
 
 const eventRouter = Router();
 
-eventRouter.use(authenticateToken);
 eventRouter.get('/fetchEventOptions', getEventsFormOptions);
 eventRouter.get(`/getEvents/`, getEvents);
 eventRouter.post('/create', createEvent);

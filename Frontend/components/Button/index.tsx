@@ -69,7 +69,6 @@ const styles = StyleSheet.create({
   button: {
     alignSelf: 'center',
     borderRadius: borderRadius.medium,
-    width: '100%',
   },
   buttonPressed: {
     opacity: 0.8,

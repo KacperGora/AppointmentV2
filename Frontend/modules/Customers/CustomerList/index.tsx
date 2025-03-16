@@ -3,6 +3,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, FlatList, StyleSheet, Text } from 'react-native';
 
 import { ScreenWrapper } from '@components';
+import { apiRoutes } from '@helpers';
+import { RefetchOptions, useQuery, useQueryClient } from '@tanstack/react-query';
 import { beautyTheme } from '@theme';
 import { CustomerType } from '@types';
 import NoData from 'components/NoData';
@@ -19,6 +21,8 @@ type CustomerListType = {
   isSearchbarVisible: boolean;
   onSearchbarClose: () => void;
   isAddCustomerFormVisible: boolean;
+  onRefresh: (options?: RefetchOptions) => Promise<void>;
+  onAddCustomerFormToggle: () => void;
 };
 
 const CustomerList: React.FC<CustomerListType> = ({
@@ -26,22 +30,29 @@ const CustomerList: React.FC<CustomerListType> = ({
   isSearchbarVisible,
   onSearchbarClose,
   isAddCustomerFormVisible,
+  onRefresh,
+  onAddCustomerFormToggle,
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
   const searchBarOpacity = useRef(new Animated.Value(0)).current;
-
   const [searchQuery, setSearchQuery] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
 
   const searchHandler = (value: string) => {
     setSearchQuery(value);
   };
 
   const handleClearIconPress = () => {
-    console.log('press');
     setSearchQuery('');
     onSearchbarClose();
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await onRefresh();
+    setRefreshing(false);
   };
 
   const renderItem = useMemo(
@@ -60,9 +71,12 @@ const CustomerList: React.FC<CustomerListType> = ({
     }).start();
   }, [isSearchbarVisible, searchBarOpacity]);
 
+  if (isAddCustomerFormVisible) {
+    return <CustomerForm onClose={onAddCustomerFormToggle} />;
+  }
+
   return (
     <ScreenWrapper>
-      {isAddCustomerFormVisible && <CustomerForm onSubmit={async () => {}} />}
       <Animated.View style={[styles.animatedContainer, { opacity: searchBarOpacity }]}>
         {isSearchbarVisible && (
           <Searchbar
@@ -87,6 +101,8 @@ const CustomerList: React.FC<CustomerListType> = ({
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
         ListEmptyComponent={NoData}
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
       />
     </ScreenWrapper>
   );
