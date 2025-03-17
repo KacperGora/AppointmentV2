@@ -1,6 +1,5 @@
 import React, { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 
-
 import BottomSheet from '@gorhom/bottom-sheet';
 import { api, DATE_FORMAT_FULL_MONTH_WITH_YEAR } from '@helpers';
 import {
@@ -12,6 +11,7 @@ import {
   OnCreateEventResponse,
   OnEventResponse,
 } from '@howljs/calendar-kit';
+import { CreateEventForm } from '@modules';
 import { useNavigation } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 import { beautyTheme } from '@theme';
@@ -28,12 +28,10 @@ export type CalendarRouteProp = {
     mode: number;
     onMonthChange: (date: string) => void;
   };
-  onFormToggle: (dateSelected: any) => void;
   currentBottomSheetIndex?: number;
 };
 
 const fetchList = async () => {
-  console.log('req');
   const { data } = await api.get('event/getEvents');
   const parseEvents = data.map((event: any) => {
     return {
@@ -48,8 +46,9 @@ const fetchList = async () => {
 
   return parseEvents;
 };
+
 const Calendar = forwardRef<CalendarKitHandle, CalendarRouteProp>(
-  ({ params, onFormToggle, currentBottomSheetIndex }, ref) => {
+  ({ params, currentBottomSheetIndex }, ref) => {
     const { mode } = useMemo(() => params, [params]);
     const navigation = useNavigation();
 
@@ -59,8 +58,16 @@ const Calendar = forwardRef<CalendarKitHandle, CalendarRouteProp>(
       enabled: true,
     });
 
+    const [isEventFormVisible, setEventFormVisible] = useState(false);
+    const [initialDate, setInitialDate] = useState({ start: '', end: '' });
+
     const bottomSheetRef = useRef<BottomSheet>(null);
     const [eventForm, setEventForm] = useState<EventForm>(eventEmptyState);
+
+    const toggleEventForm = ({ start, end }: { start: string; end: string }) => {
+      setEventFormVisible((prev) => !prev);
+      setInitialDate({ start, end });
+    };
 
     const handleEventChange = (event: OnCreateEventResponse) => {
       const {
@@ -72,7 +79,7 @@ const Calendar = forwardRef<CalendarKitHandle, CalendarRouteProp>(
         start,
         end,
       }));
-      onFormToggle({ start, end });
+      toggleEventForm({ start, end });
       bottomSheetRef.current?.expand();
     };
 
@@ -90,17 +97,19 @@ const Calendar = forwardRef<CalendarKitHandle, CalendarRouteProp>(
         end: end.dateTime || '',
         notes: eventToUpdate.notes,
       }));
-      // onFormToggle({ start: start.dateTime, end: end.dateTime });
+
+      toggleEventForm({ start: start.dateTime || '', end: end.dateTime || '' });
     };
 
     const handleDateChange = (date: string) => {
       const { onMonthChange } = params;
       onMonthChange(dayjs(date).locale('pl').format(DATE_FORMAT_FULL_MONTH_WITH_YEAR));
     };
+
     useEffect(() => {
       const unsubscribe = navigation.addListener('state', () => {
         refetch();
-        onFormToggle({});
+        // onFormToggle({});
         bottomSheetRef.current?.close();
       });
 
@@ -108,23 +117,30 @@ const Calendar = forwardRef<CalendarKitHandle, CalendarRouteProp>(
     }, [dataUpdatedAt, refetch, navigation]);
 
     return (
-      <CalendarContainer
-        ref={ref}
-        allowDragToEdit
-        events={data}
-        hideWeekDays={mode === withoutWeekends ? [5, 6] : []}
-        numberOfDays={mode}
-        onDateChanged={handleDateChange}
-        onDragEventEnd={onDragEventEnd}
-        onDragCreateEventEnd={handleEventChange}
-        onRefresh={fetchList}
-        overlapType="no-overlap"
-        allowDragToCreate={!Boolean(currentBottomSheetIndex)}
-        {...calendarContainerConfig}
-      >
-        <CalendarHeader />
-        <CalendarBody showNowIndicator />
-      </CalendarContainer>
+      <>
+        <CalendarContainer
+          ref={ref}
+          events={data}
+          hideWeekDays={mode === withoutWeekends ? [5, 6] : []}
+          numberOfDays={mode}
+          onDateChanged={handleDateChange}
+          onDragEventEnd={onDragEventEnd}
+          onDragCreateEventEnd={handleEventChange}
+          onRefresh={fetchList}
+          allowDragToCreate={!Boolean(currentBottomSheetIndex)}
+          {...calendarContainerConfig}
+        >
+          <CalendarHeader />
+          <CalendarBody showNowIndicator />
+        </CalendarContainer>
+        {isEventFormVisible && (
+          <CreateEventForm
+            initialDateState={initialDate}
+            toggleFormVisibility={() => toggleEventForm({ end: '', start: '' })}
+            onEventCreateRequest={async () => {}}
+          />
+        )}
+      </>
     );
   },
 );

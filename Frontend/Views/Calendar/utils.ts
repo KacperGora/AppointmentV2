@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { DATE_FORMAT_FULL_MONTH_WITH_YEAR } from '@helpers';
+import { CalendarProviderProps } from '@howljs/calendar-kit';
 import { beautyTheme } from '@theme';
 import { EventForm } from '@types';
 import dayjs from 'dayjs';
@@ -127,11 +128,13 @@ export const customTheme = {
   },
 };
 
-export const calendarContainerConfig = {
+export const calendarContainerConfig: CalendarProviderProps = {
   allowPinchToZoom: true,
   useHaptic: true,
   timeZone: 'Europe/Warsaw',
   locale: 'pl',
   initialLocales: plConfig,
   theme: customTheme,
+  overlapType: 'no-overlap',
+  allowDragToEdit: true,
 };

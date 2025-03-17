@@ -55,7 +55,7 @@ const CustomerList: React.FC<CustomerListType> = ({
     setRefreshing(false);
   };
 
-  const renderItem = useMemo(
+  const renderCustomerItem = useMemo(
     () =>
       ({ item }: { item: CustomerType }) => {
         return <CustomerDetailListRow customer={item} />;
@@ -99,7 +99,7 @@ const CustomerList: React.FC<CustomerListType> = ({
           gap: 20,
         }}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={renderItem}
+        renderItem={renderCustomerItem}
         ListEmptyComponent={NoData}
         refreshing={refreshing}
         onRefresh={handleRefresh}

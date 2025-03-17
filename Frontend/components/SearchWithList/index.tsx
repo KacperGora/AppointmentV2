@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import { CustomerType, ServiceType } from '@types';
 import i18next from 'i18next';
@@ -11,7 +11,8 @@ type SearchWithListProps = {
   searchValue: string;
   list: ServiceType[] | CustomerType[];
   handleInputChange: (value: string) => void;
-  renderItem: (item: ServiceType | CustomerType) => JSX.Element;
+  Item: React.ComponentType;
+  // renderItem: (item: ServiceType | CustomerType) => JSX.Element;
 };
 
 const SearchWithList: React.FC<SearchWithListProps> = ({
@@ -20,8 +21,13 @@ const SearchWithList: React.FC<SearchWithListProps> = ({
   searchValue,
   list,
   handleInputChange,
-  renderItem,
+  Item,
+  // renderItem,
 }) => {
+  const renderItem = () => {
+    return <Item />;
+  };
+
   return (
     <>
       <Input

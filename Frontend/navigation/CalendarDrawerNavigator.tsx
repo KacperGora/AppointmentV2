@@ -7,7 +7,7 @@ import {
   SCREEN_NAME_CONFIG,
 } from '@helpers';
 import { CalendarKitHandle } from '@howljs/calendar-kit';
-import { Topbar } from '@modules';
+import { CreateEventForm, Topbar } from '@modules';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Calendar, today } from '@views';
 import dayjs from 'dayjs';
@@ -17,7 +17,6 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { calendarDrawerConfig, calendarDrawerScreenConfig } from './utils';
 
 const currentMonth = dayjs().locale(LOCALE_PL).format(DATE_FORMAT_FULL_MONTH_WITH_YEAR);
-const initialSelectedDate = { start: dayjs().toISOString(), end: dayjs().toISOString() };
 const Drawer = createDrawerNavigator();
 
 const renderDrawerIcon =
@@ -34,24 +33,23 @@ export const CalendarDrawerNavigator = () => {
   const calendarRef = useRef<CalendarKitHandle>(null);
 
   const [currentBottomSheetIndex, setCurrentBottomSheetIndex] = useState(0);
+  const [isEventFormVisible, setIsEventFormVisible] = useState(false);
+  const [initialFormDate, setInitialDate] = useState({ start: '', end: '' });
   const [displayedCalendarMonth, setDisplayedCalendarMonth] = useState<string>(currentMonth);
-  const [isFormVisible, setIsFormVisible] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<{ start: string; end: string }>(
-    initialSelectedDate,
-  );
-
-  const onCurrentIndexChange = useCallback((index: number) => {
-    setCurrentBottomSheetIndex(index);
-  }, []);
 
   const handleMonthChange = useCallback((date: string) => {
     setDisplayedCalendarMonth(date);
   }, []);
 
-  const onFormToggle = useCallback((dateSelected: { start: string; end: string }) => {
-    setSelectedDate(dateSelected);
-    setIsFormVisible((prev) => !prev);
-  }, []);
+  const toggleEventFormVisibility = useCallback(
+    ({ start = '', end = '' }: { start?: string; end?: string }) => {
+      setIsEventFormVisible((prev) => !prev);
+      setInitialDate({ end, start });
+    },
+    [],
+  );
+
+  console.log(isEventFormVisible);
 
   const navigateToToday = useCallback(() => {
     calendarRef.current?.goToDate({
@@ -59,10 +57,6 @@ export const CalendarDrawerNavigator = () => {
     });
     handleMonthChange(currentMonth);
   }, [handleMonthChange]);
-
-  const handleCloseForm = useCallback(() => {
-    setIsFormVisible(false);
-  }, []);
 
   return (
     <Drawer.Navigator
@@ -80,14 +74,7 @@ export const CalendarDrawerNavigator = () => {
             drawerIcon: renderDrawerIcon(icon),
           }}
         >
-          {() => (
-            <Calendar
-              ref={calendarRef}
-              params={{ mode, onMonthChange: handleMonthChange }}
-              onFormToggle={onFormToggle}
-              currentBottomSheetIndex={currentBottomSheetIndex}
-            />
-          )}
+          {() => <Calendar ref={calendarRef} params={{ mode, onMonthChange: handleMonthChange }} />}
         </Drawer.Screen>
       ))}
     </Drawer.Navigator>
