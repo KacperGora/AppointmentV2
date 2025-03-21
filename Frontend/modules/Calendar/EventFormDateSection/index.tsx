@@ -12,20 +12,27 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { FormSectionProps } from '../CreateEventForm/type';
 
-const DateSection: React.FC<FormSectionProps> = ({ form, onFormChangeHandler }) => {
+const DateSection: React.FC<FormSectionProps<void>> = ({
+  form,
+  onFormChangeHandler,
+}) => {
   const { t } = useTranslation();
 
   return (
     <View>
       <View style={styles.timeLabelContainer}>
-        <Icon name="calendar-clock" size={24} color={beautyTheme.colors.onSurfaceVariant} />
+        <Icon
+          name="calendar-clock"
+          size={24}
+          color={beautyTheme.colors.onSurfaceVariant}
+        />
         <Text style={styles.timeLabel}>{t('form.appointmentDate')}</Text>
       </View>
       <DatePicker
         label={t('calendar.startDate')}
         value={form.start}
         onChange={onFormChangeHandler('start')}
-        minDate={dayjs()?.toISOString()}
+        minDate={dayjs().toISOString()}
       />
       <DatePicker
         label={t('calendar.endDate')}

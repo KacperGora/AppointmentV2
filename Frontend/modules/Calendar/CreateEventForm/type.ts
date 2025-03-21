@@ -8,7 +8,11 @@ export type CreateEventFormProps = {
   toggleFormVisibility?: (dates: { start?: string; end?: string }) => void;
 };
 
-export type FormSectionProps = {
+export type FormSectionProps<T> = {
   form: EventForm;
-  onFormChangeHandler: (key: keyof EventForm) => (value: string) => void;
+  onFormChangeHandler: (
+    key: keyof EventForm,
+  ) => (value: EventForm[keyof EventForm]) => void;
+  listData?: T[];
+  toggleAdditionalForm?: (key: string) => () => void;
 };

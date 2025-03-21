@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { StyleSheet } from 'react-native';
 
+import { CustomBottomSheet } from '@components';
 import { api } from '@helpers';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import FormTitle from 'components/FormTitle';
@@ -11,7 +12,9 @@ import { Button, Divider, Text, TextInput } from 'react-native-paper';
 
 import { validateServiceForm } from './utils';
 
-const CompanyServicesForm: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
+const CompanyServicesForm: React.FC<{ onClose?: () => void }> = ({
+  onClose,
+}) => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [form, setForm] = useState({
@@ -20,9 +23,12 @@ const CompanyServicesForm: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
     servicePrice: '',
     serviceDuration: '',
   });
-  const { serviceName, serviceDescription, servicePrice, serviceDuration } = form;
+  const { serviceName, serviceDescription, servicePrice, serviceDuration } =
+    form;
   const [hasErrors, setHasErrors] = useState(false);
-  const [formErrors, setFormErrors] = useState<{ [key: string]: string } | undefined>(undefined);
+  const [formErrors, setFormErrors] = useState<
+    { [key: string]: string } | undefined
+  >(undefined);
 
   const { mutate, error } = useMutation({
     mutationFn: async () => {
@@ -34,7 +40,9 @@ const CompanyServicesForm: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
       });
     },
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({ queryKey: ['services', 'getEventsFormOptions'] });
+      await queryClient.invalidateQueries({
+        queryKey: ['services', 'getEventsFormOptions'],
+      });
     },
     onError: (error) => {
       console.log('Error adding service', error);
@@ -57,7 +65,7 @@ const CompanyServicesForm: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
   }, [serviceName, serviceDescription, servicePrice, serviceDuration]);
 
   return (
-    <KeyboardAvoidingContainer>
+    <CustomBottomSheet isVisible onClose={() => {}}>
       <FormTitle title={t('form.addService')} onClose={onClose} />
       <Divider style={styles.divider} />
       <TextInput
@@ -69,7 +77,9 @@ const CompanyServicesForm: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
         style={styles.input}
         error={!!formErrors?.serviceName}
       />
-      {formErrors?.serviceName && <Text style={styles.errorText}>{formErrors.serviceName}</Text>}
+      {formErrors?.serviceName && (
+        <Text style={styles.errorText}>{formErrors.serviceName}</Text>
+      )}
       <TextInput
         placeholder={t('form.serviceDescriptionPlaceholder')}
         mode="outlined"
@@ -94,7 +104,9 @@ const CompanyServicesForm: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
         style={styles.input}
         error={!!formErrors?.servicePrice}
       />
-      {formErrors?.servicePrice && <Text style={styles.errorText}>{formErrors.servicePrice}</Text>}
+      {formErrors?.servicePrice && (
+        <Text style={styles.errorText}>{formErrors.servicePrice}</Text>
+      )}
       <TextInput
         mode="outlined"
         value={serviceDuration}
@@ -120,7 +132,7 @@ const CompanyServicesForm: React.FC<{ onClose?: () => void }> = ({ onClose }) =>
       >
         {t('form.save')}
       </Button>
-    </KeyboardAvoidingContainer>
+    </CustomBottomSheet>
   );
 };
 

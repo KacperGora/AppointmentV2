@@ -16,7 +16,9 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { calendarDrawerConfig, calendarDrawerScreenConfig } from './utils';
 
-const currentMonth = dayjs().locale(LOCALE_PL).format(DATE_FORMAT_FULL_MONTH_WITH_YEAR);
+const currentMonth = dayjs()
+  .locale(LOCALE_PL)
+  .format(DATE_FORMAT_FULL_MONTH_WITH_YEAR);
 const Drawer = createDrawerNavigator();
 
 const renderDrawerIcon =
@@ -25,31 +27,27 @@ const renderDrawerIcon =
     <Icon name={name} size={size} color={color} />
   );
 
-const renderCalendarTopbar = (navigateToToday: () => void, displayedCalendarMonth: string) => (
-  <Topbar onPress={navigateToToday} date={today} displayedCalendarMonth={displayedCalendarMonth} />
+const renderCalendarTopbar = (
+  navigateToToday: () => void,
+  displayedCalendarMonth: string,
+) => (
+  <Topbar
+    onPress={navigateToToday}
+    date={today}
+    displayedCalendarMonth={displayedCalendarMonth}
+  />
 );
 
 export const CalendarDrawerNavigator = () => {
   const calendarRef = useRef<CalendarKitHandle>(null);
 
-  const [currentBottomSheetIndex, setCurrentBottomSheetIndex] = useState(0);
-  const [isEventFormVisible, setIsEventFormVisible] = useState(false);
   const [initialFormDate, setInitialDate] = useState({ start: '', end: '' });
-  const [displayedCalendarMonth, setDisplayedCalendarMonth] = useState<string>(currentMonth);
+  const [displayedCalendarMonth, setDisplayedCalendarMonth] =
+    useState<string>(currentMonth);
 
   const handleMonthChange = useCallback((date: string) => {
     setDisplayedCalendarMonth(date);
   }, []);
-
-  const toggleEventFormVisibility = useCallback(
-    ({ start = '', end = '' }: { start?: string; end?: string }) => {
-      setIsEventFormVisible((prev) => !prev);
-      setInitialDate({ end, start });
-    },
-    [],
-  );
-
-  console.log(isEventFormVisible);
 
   const navigateToToday = useCallback(() => {
     calendarRef.current?.goToDate({
@@ -62,7 +60,8 @@ export const CalendarDrawerNavigator = () => {
     <Drawer.Navigator
       initialRouteName={SCREEN_NAME_CONFIG.Calendar}
       screenOptions={{
-        headerTitle: () => renderCalendarTopbar(navigateToToday, displayedCalendarMonth),
+        headerTitle: () =>
+          renderCalendarTopbar(navigateToToday, displayedCalendarMonth),
         ...calendarDrawerConfig,
       }}
     >
@@ -74,7 +73,12 @@ export const CalendarDrawerNavigator = () => {
             drawerIcon: renderDrawerIcon(icon),
           }}
         >
-          {() => <Calendar ref={calendarRef} params={{ mode, onMonthChange: handleMonthChange }} />}
+          {() => (
+            <Calendar
+              ref={calendarRef}
+              params={{ mode, onMonthChange: handleMonthChange }}
+            />
+          )}
         </Drawer.Screen>
       ))}
     </Drawer.Navigator>

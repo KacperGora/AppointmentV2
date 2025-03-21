@@ -1,26 +1,20 @@
 import React, { useEffect, useState } from 'react';
 
-import { TouchableOpacity, View } from 'react-native';
+import { View } from 'react-native';
 
-import { Button, CustomBottomSheet, DatePicker, Input, SearchWithList } from '@components';
-import { api, apiRoutes, fromIntervalToMinutes, getFullName, useAuth } from '@helpers';
-// import { CompanyServicesForm, CustomerForm } from '@modules';
-import { useQuery } from '@tanstack/react-query';
-import { beautyTheme } from '@theme';
-import { CustomerType, EventForm, EventFormOptionType, ServiceType } from '@types';
-import dayjs from 'dayjs';
-import { CompanyServicesForm } from 'modules/Company';
-import { CustomerForm } from 'modules/Customers';
+import { Button, CustomBottomSheet } from '@components';
+import { api, apiRoutes } from '@helpers';
+import { EventForm } from '@types';
 import { useTranslation } from 'react-i18next';
-import { Text, Title } from 'react-native-paper';
+import { Title } from 'react-native-paper';
 
 import CustomerEventFormSection from '../CustomerEventFormSection';
 import DateSection from '../EventFormDateSection';
-import ServiceEventFormSection from '../EventFormServiceSection';
+import ServiceEventFormSection from '../ServiceEventFromSection';
+import { useGetEventOptions } from './hook';
 import { styles } from './style';
 import { CreateEventFormProps } from './type';
 import {
-  formatCurrency,
   handlePriceChange,
   initialFormState,
   isEventDurationLongerThanADay,
@@ -34,23 +28,20 @@ const CreateEventForm: React.FC<CreateEventFormProps> = ({
   toggleFormVisibility,
 }) => {
   const { t } = useTranslation();
-  const { userId } = useAuth();
+
+  const { data, isLoading } = useGetEventOptions();
 
   const [isFormValid, setIsFormValid] = useState(false);
-  const [eventForm, setEventForm] = useState<EventForm>(() => ({
+  const [eventForm, setEventForm] = useState<EventForm>({
     start: initialDateState.start,
     end: initialDateState.end,
     clientId: initialState?.clientId ?? initialFormState.clientId,
     notes: initialState?.notes ?? initialFormState.notes,
     service: initialState?.service ?? initialFormState.service,
-  }));
-
-  const [filteredOptions, setFilteredOptions] = useState<{
-    clients: CustomerType[];
-    services: ServiceType[];
-  }>({
-    clients: [],
-    services: [],
+  });
+  const [isAdditionalFormVisible, setIsAdditionalFormVisible] = useState({
+    clientForm: false,
+    serviceForm: false,
   });
 
   const [isOptionFormVisible, setIsOptionFormVisible] = useState<{
@@ -61,17 +52,14 @@ const CreateEventForm: React.FC<CreateEventFormProps> = ({
     service: false,
   });
 
-  const toggleCreateOption = (name: 'service' | 'client') => () => {
-    setIsOptionFormVisible((prev) => ({ ...prev, [name]: !prev[name] }));
-  };
-
-  const handleChange = (name: keyof EventForm) => (value: string) => {
-    if (name === 'price') {
-      setEventForm((prev) => ({ ...prev, price: handlePriceChange(value) }));
-      return;
-    }
-    setEventForm((prev) => ({ ...prev, [name]: value }));
-  };
+  const handleChange =
+    (name: keyof EventForm) => (value: EventForm[keyof EventForm]) => {
+      if (name === 'price') {
+        setEventForm((prev) => ({ ...prev, price: handlePriceChange(value) }));
+      } else {
+        setEventForm((prev) => ({ ...prev, [name]: value }));
+      }
+    };
 
   const handleSubmit = async () => {
     try {
@@ -79,7 +67,7 @@ const CreateEventForm: React.FC<CreateEventFormProps> = ({
       await api.post(apiRoutes.event.create, eventForm);
       await onEventCreateRequest();
     } catch (error) {
-      console.error('Error while creating event', error);
+      // Handle the error if needed
     } finally {
       setEventForm(initialFormState);
     }
@@ -100,20 +88,23 @@ const CreateEventForm: React.FC<CreateEventFormProps> = ({
     }
   }, [eventForm.start, eventForm.end]);
 
-  if (Object.values(isOptionFormVisible).some((value) => value)) {
-    return isOptionFormVisible.client ? (
-      <CustomerForm onClose={toggleCreateOption('client')} />
-    ) : (
-      <CompanyServicesForm onClose={toggleCreateOption('service')} />
-    );
-  }
-
   return (
-    <CustomBottomSheet isVisible onClose={() => toggleFormVisibility?.({ start: '', end: '' })}>
+    <CustomBottomSheet
+      isVisible
+      onClose={() => toggleFormVisibility?.({ start: '', end: '' })}
+    >
       <Title style={styles.formTitle}>{t('calendar.addNewVisit')}</Title>
       <View style={styles.formContainer}>
-        <CustomerEventFormSection form={eventForm} onFormChangeHandler={handleChange} />
-        <ServiceEventFormSection form={eventForm} onFormChangeHandler={handleChange} />
+        <CustomerEventFormSection
+          listData={data.clients}
+          form={eventForm}
+          onFormChangeHandler={handleChange}
+        />
+        <ServiceEventFormSection
+          listData={data.services}
+          form={eventForm}
+          onFormChangeHandler={handleChange}
+        />
         <DateSection form={eventForm} onFormChangeHandler={handleChange} />
         <Button
           label={t('form.save')}

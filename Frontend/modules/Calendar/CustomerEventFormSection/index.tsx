@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import { Button, SearchWithList } from '@components';
-import { api, apiRoutes, fromIntervalToMinutes } from '@helpers';
+import { api, apiRoutes, getFullName } from '@helpers';
 import { useQuery } from '@tanstack/react-query';
 import { beautyTheme } from '@theme';
 import { CustomerType, ServiceType } from '@types';
@@ -19,58 +19,48 @@ const {
   },
 } = apiRoutes;
 
-const CustomerEventFormSection: React.FC<FormSectionProps> = ({ form, onFormChangeHandler }) => {
+const CustomerEventFormSection: React.FC<FormSectionProps<CustomerType>> = ({
+  onFormChangeHandler,
+  listData = [],
+}) => {
   const { t } = useTranslation();
   const [searchValue, setSearchValue] = useState('');
-  const { data, isLoading = false } = useQuery<{
-    services: ServiceType[];
-    clients: CustomerType[];
-  }>({
-    queryKey: [queryKey],
-    queryFn: async () => {
-      const { data } = await api.get(eventOptions);
-      if (!data) {
-        throw new Error('No data');
-      }
-      return data || [];
-    },
-  });
-  const handleClientSelect = (client: CustomerType) => {
-    const { id: clientId, name, lastName } = client;
-    // setEventForm((prev) => ({ ...prev, clientId }));
-    // setSearch((prev) => ({ ...prev, clientsSearch: getFullName(name, lastName) }));
-    // setFilteredOptions((prev) => ({ ...prev, clients: [] }));
-  };
-  const handleSearchChange = (v: string) => {
-    setSearchValue(() => v);
+
+  const filteredClients = listData.filter((client) =>
+    getFullName(client.name, client.lastName)
+      .toLowerCase()
+      .includes(searchValue.toLowerCase()),
+  );
+
+  const showElement = (item: CustomerType) => {
+    const { lastName, name, phoneNumber } = item;
+    return `${getFullName(name, lastName)} - ${phoneNumber}`;
   };
 
-  const toggleForm = (option: 'clientF') => () => {};
+  const handleCustomerSelect = (client: CustomerType) => {
+    onFormChangeHandler('clientId')(client.id);
+    setSearchValue(getFullName(client.name, client.lastName));
+  };
 
   return (
     <View>
-      <View style={styles.timeLabelContainer}>
-        <Icon name="account-outline" size={24} color={beautyTheme.colors.onSurfaceVariant} />
+      <View style={styles.sectionLabel}>
+        <Icon
+          name="account-outline"
+          size={24}
+          color={beautyTheme.colors.onSurfaceVariant}
+        />
         <Text style={styles.timeLabel}>{t('form.customerData')}</Text>
       </View>
-      {/* <SearchWithList
+      <SearchWithList
         label={t('form.selectClient')}
         placeholder={t('form.typeToSearch')}
-        list={data?.clients ?? []}
-        // Item={null}
-        // renderItem={renderItem('customer')}
+        list={filteredClients}
         searchValue={searchValue}
-        handleInputChange={handleSearchChange}
-      /> */}
-      {/* {isAddClientOptionVisible && (
-        <Button
-          label={t('form.addClient')}
-          onPress={toggleForm('client')}
-          labelStyle={styles.btnLabel}
-          style={{ alignSelf: 'flex-start' }}
-          mode="text"
-        />
-      )} */}
+        showOnList={showElement}
+        handleInputChange={setSearchValue}
+        onSelect={handleCustomerSelect}
+      />
     </View>
   );
 };
@@ -78,7 +68,7 @@ const CustomerEventFormSection: React.FC<FormSectionProps> = ({ form, onFormChan
 export default CustomerEventFormSection;
 
 const styles = StyleSheet.create({
-  timeLabelContainer: {
+  sectionLabel: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: beautyTheme.spacing.s,
@@ -91,11 +81,5 @@ const styles = StyleSheet.create({
     color: beautyTheme.colors.onBackground,
     fontWeight: 'bold',
     fontSize: beautyTheme.fontSizes.medium,
-  },
-  btnLabel: {
-    color: beautyTheme.colors.onBackground,
-    fontWeight: beautyTheme.fontWeight.medium,
-    textAlign: 'left',
-    width: '100%',
   },
 });

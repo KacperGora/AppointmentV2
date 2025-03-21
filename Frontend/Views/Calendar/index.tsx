@@ -19,7 +19,11 @@ import { EventForm } from '@types';
 import dayjs from 'dayjs';
 import 'intl-pluralrules';
 
-import { CALENDAR_ENUM, calendarContainerConfig, eventEmptyState } from './utils';
+import {
+  CALENDAR_ENUM,
+  calendarContainerConfig,
+  eventEmptyState,
+} from './utils';
 
 const { withoutWeekends } = CALENDAR_ENUM;
 
@@ -37,12 +41,13 @@ const fetchList = async () => {
     return {
       ...event,
       id: Math.random().toString(),
-      title: event.client,
+      title: event.clientId,
       start: { dateTime: event.startTime },
       end: { dateTime: event.endTime },
-      color: beautyTheme.colors.inversePrimary,
+      color: beautyTheme.colors.inverseOnSurface,
     };
   });
+  console.log(parseEvents);
 
   return parseEvents;
 };
@@ -57,14 +62,20 @@ const Calendar = forwardRef<CalendarKitHandle, CalendarRouteProp>(
       queryFn: fetchList,
       enabled: true,
     });
-
+    console.log(data);
     const [isEventFormVisible, setEventFormVisible] = useState(false);
     const [initialDate, setInitialDate] = useState({ start: '', end: '' });
 
     const bottomSheetRef = useRef<BottomSheet>(null);
     const [eventForm, setEventForm] = useState<EventForm>(eventEmptyState);
 
-    const toggleEventForm = ({ start, end }: { start: string; end: string }) => {
+    const toggleEventForm = ({
+      start,
+      end,
+    }: {
+      start: string;
+      end: string;
+    }) => {
       setEventFormVisible((prev) => !prev);
       setInitialDate({ start, end });
     };
@@ -85,7 +96,9 @@ const Calendar = forwardRef<CalendarKitHandle, CalendarRouteProp>(
 
     const onDragEventEnd = (event: OnEventResponse) => {
       const { start, end, id } = event;
-      const eventToUpdate = data?.find(({ id: eventId }) => eventId === id) as EventItem;
+      const eventToUpdate = data?.find(
+        ({ id: eventId }) => eventId === id,
+      ) as EventItem;
 
       if (!eventToUpdate) return;
       setEventForm((prev) => ({
@@ -103,7 +116,9 @@ const Calendar = forwardRef<CalendarKitHandle, CalendarRouteProp>(
 
     const handleDateChange = (date: string) => {
       const { onMonthChange } = params;
-      onMonthChange(dayjs(date).locale('pl').format(DATE_FORMAT_FULL_MONTH_WITH_YEAR));
+      onMonthChange(
+        dayjs(date).locale('pl').format(DATE_FORMAT_FULL_MONTH_WITH_YEAR),
+      );
     };
 
     useEffect(() => {
