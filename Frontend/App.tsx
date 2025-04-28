@@ -2,18 +2,22 @@ import React from 'react';
 
 import { ActivityIndicator, AppRegistry } from 'react-native';
 
+import { ScreenWrapper } from '@components';
 import { useAuth, useLoadFonts } from '@helpers';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { beautyTheme, colors } from '@theme';
 import { NotificationProvider } from 'helpers/notification';
 import 'intl-pluralrules';
 import { AppNavigator } from 'navigation/HomeStackNavigator';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider } from 'react-native-paper';
-import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
+import {
+  configureReanimatedLogger,
+  ReanimatedLogLevel,
+} from 'react-native-reanimated';
 
 import { AuthProvider } from './context/AuthContext';
 import { name as appName } from './package.json';
+import { beautyTheme, colors } from '@theme';
 
 configureReanimatedLogger({
   level: ReanimatedLogLevel.error,
@@ -46,7 +50,9 @@ const Root = () => {
     <GestureHandlerRootView>
       <AuthProvider>
         <QueryClientProvider client={queryClient}>
-          <App fontsLoaded={fontsLoaded} />
+          <ScreenWrapper>
+            <App fontsLoaded={fontsLoaded} />
+          </ScreenWrapper>
         </QueryClientProvider>
       </AuthProvider>
     </GestureHandlerRootView>

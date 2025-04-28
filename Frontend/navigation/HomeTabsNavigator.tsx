@@ -1,4 +1,7 @@
+import { View } from 'react-native';
+
 import { SCREEN_NAME_CONFIG } from '@helpers';
+import { Topbar } from '@modules';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { beautyTheme } from '@theme';
 import { useTranslation } from 'react-i18next';
@@ -14,7 +17,9 @@ export const renderTabIcon =
   ({ size, focused }: { size: number; focused: boolean }) => (
     <Icon
       name={name}
-      color={focused ? beautyTheme.colors.primary : beautyTheme.colors.onSurface}
+      color={
+        focused ? beautyTheme.colors.primary : beautyTheme.colors.onSurface
+      }
       size={size}
     />
   );

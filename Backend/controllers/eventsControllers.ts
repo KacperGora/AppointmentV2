@@ -1,10 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { createDataBaseEvent, getDatabaseEvents, updateDatabaseEvent } from '../models/Event';
-import { handleError } from '../utils/authUtils';
 import { companyService } from '../services/companyService';
 import { clientService } from '../services/clientServices';
-import { errors } from '../config/errors';
-import { CustomError } from '../services/userService';
 
 export const eventsController = {
   getEvents: async (req: Request, res: Response, next: NextFunction) => {

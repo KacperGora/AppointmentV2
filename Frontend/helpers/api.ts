@@ -5,7 +5,7 @@ import { toCamelCase, toSnakeCase } from './utils';
 
 type TokenKey = 'accessToken' | 'refreshToken';
 
-const API_BASE_URL = 'http://192.168.8.103:3000';
+const API_BASE_URL = 'http://192.168.100.2:3000';
 
 export const saveToken = async (key: TokenKey, value: string) => {
   try {
@@ -96,9 +96,12 @@ api.interceptors.response.use(
             throw new Error('No refresh token available');
           }
 
-          const { data } = await axios.post(`${API_BASE_URL}/auth/refresh-token`, {
-            refresh_token: refreshToken,
-          });
+          const { data } = await axios.post(
+            `${API_BASE_URL}/auth/refresh-token`,
+            {
+              refresh_token: refreshToken,
+            },
+          );
 
           const newToken = data.accessToken;
           await saveToken('accessToken', newToken);

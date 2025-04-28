@@ -10,7 +10,6 @@ export const createDataBaseEvent = async (event: any) => {
     RETURNING id
   `;
 
-  // Sprawdzenie, czy klient istnieje w tabeli clients
   const clientExists = await db.oneOrNone('SELECT 1 FROM clients WHERE id = $1', [client_id]);
   if (!clientExists) {
     throw new Error('Client not found');
@@ -19,9 +18,8 @@ export const createDataBaseEvent = async (event: any) => {
   const values = [service, start, end, client_id, notes, Number(price), userId];
 
   try {
-    // Zwróci wygenerowany event_id
     const result = await db.one(query, values);
-    return result.id; // Zwrócenie wygenerowanego ID nowego eventu
+    return result.id;
   } catch (error) {
     throw error;
   }

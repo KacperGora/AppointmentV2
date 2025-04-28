@@ -44,7 +44,7 @@ export const createClient = async (client: Client) => {
   try {
     return await db.one(query, values);
   } catch (error) {
-    throw new CustomError(errors.INTERNAL_SERVER_ERROR.message, 500);
+     throw CustomError.fromKey('INTERNAL_SERVER_ERROR');
   }
 };
 
@@ -64,7 +64,7 @@ export const fetchDatabaseClients = async (userId: string, query: { search?: str
   try {
     return await db.manyOrNone(dbQuery, values);
   } catch (error) {
-    throw new CustomError(errors.INTERNAL_SERVER_ERROR.message, 500);
+    throw CustomError.fromKey('INTERNAL_SERVER_ERROR');
   }
 };
 
@@ -72,7 +72,7 @@ export const deleteDatabaseClient = async (clientId: string) => {
   try {
     return await db.none('DELETE FROM clients WHERE id = $1', [clientId]);
   } catch (error) {
-    throw new CustomError(errors.INTERNAL_SERVER_ERROR.message, 500);
+    throw CustomError.fromKey('INTERNAL_SERVER_ERROR');
   }
 };
 export const clientDatabaseStatistic = async (userId: string) => {
@@ -102,7 +102,5 @@ export const clientDatabaseStatistic = async (userId: string) => {
       newestUser,
       mostValuableUser,
     };
-  } catch (error) {
-    throw new CustomError(errors.INTERNAL_SERVER_ERROR.message, 500);
-  }
+  } catch (error) {}
 };

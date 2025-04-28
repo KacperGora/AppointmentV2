@@ -1,6 +1,4 @@
 import { NextFunction, Request, Response } from 'express';
-import { errors } from '../config/errors';
-import { handleError } from '../utils/authUtils';
 import { userService } from '../services/userService';
 
 export const register = async (req: Request, res: Response, next: NextFunction) => {

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { findUserByKey } from '../models/User'
-import { getDataBaseServices, Service } from '../models/Service'
+import { getDatabaseServiceList, Service } from '../models/Service'
 import { handleError } from '../utils/authUtils'
 import { errors } from '../config/errors'
 import { companyService } from '../services/companyService'
@@ -22,7 +22,7 @@ export const addService = async (req: Request, res: Response): Promise<void> => 
   }
   try {
     const service = { ...req.body, user_id: userId } as Service
-    const serviceAlreadyExists = await getDataBaseServices(userId, { search: req.body.service_name })
+    const serviceAlreadyExists = await getDatabaseServiceList(userId, { search: req.body.service_name });
     if (Boolean(serviceAlreadyExists.length)) {
       return handleError(res, errors.SERVICE_EXISTS)
     }
