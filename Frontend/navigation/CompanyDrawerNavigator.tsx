@@ -4,7 +4,7 @@ import { Keyboard } from 'react-native';
 
 import BottomSheet from '@gorhom/bottom-sheet';
 import { SCREEN_NAME_CONFIG } from '@helpers';
-import { CompanyServices, Employees, FinanceView } from '@modules';
+import { CompanyServices, Employees, FinanceView, Topbar } from '@modules';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import i18next from 'i18next';
 import { TouchableOpacity } from 'react-native-gesture-handler';
@@ -39,7 +39,13 @@ export const CompanyDrawerNavigator = ({}) => {
   };
 
   return (
-    <Drawer.Navigator initialRouteName="company" screenOptions={companyDrawerConfig}>
+    <Drawer.Navigator
+      initialRouteName="company"
+      screenOptions={{
+        ...companyDrawerConfig,
+        header: () => <Topbar displayedCalendarMonth="Cześć" onPress={null} />,
+      }}
+    >
       <Drawer.Screen
         name={SCREEN_NAME_CONFIG.CompanyDashboard}
         options={{

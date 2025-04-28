@@ -1,6 +1,5 @@
 import React, { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 
-
 import BottomSheet from '@gorhom/bottom-sheet';
 import { api, DATE_FORMAT_FULL_MONTH_WITH_YEAR } from '@helpers';
 import {
@@ -12,6 +11,7 @@ import {
   OnCreateEventResponse,
   OnEventResponse,
 } from '@howljs/calendar-kit';
+import { CreateEventForm } from '@modules';
 import { useNavigation } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 import { beautyTheme } from '@theme';
@@ -19,7 +19,11 @@ import { EventForm } from '@types';
 import dayjs from 'dayjs';
 import 'intl-pluralrules';
 
-import { CALENDAR_ENUM, calendarContainerConfig, eventEmptyState } from './utils';
+import {
+  CALENDAR_ENUM,
+  calendarContainerConfig,
+  eventEmptyState,
+} from './utils';
 
 const { withoutWeekends } = CALENDAR_ENUM;
 
@@ -28,28 +32,28 @@ export type CalendarRouteProp = {
     mode: number;
     onMonthChange: (date: string) => void;
   };
-  onFormToggle: (dateSelected: any) => void;
   currentBottomSheetIndex?: number;
 };
 
 const fetchList = async () => {
-  console.log('req');
   const { data } = await api.get('event/getEvents');
   const parseEvents = data.map((event: any) => {
     return {
       ...event,
       id: Math.random().toString(),
-      title: event.client,
+      title: event.clientId,
       start: { dateTime: event.startTime },
       end: { dateTime: event.endTime },
-      color: beautyTheme.colors.inversePrimary,
+      color: beautyTheme.colors.inverseOnSurface,
     };
   });
+  console.log(parseEvents);
 
   return parseEvents;
 };
+
 const Calendar = forwardRef<CalendarKitHandle, CalendarRouteProp>(
-  ({ params, onFormToggle, currentBottomSheetIndex }, ref) => {
+  ({ params, currentBottomSheetIndex }, ref) => {
     const { mode } = useMemo(() => params, [params]);
     const navigation = useNavigation();
 
@@ -58,9 +62,23 @@ const Calendar = forwardRef<CalendarKitHandle, CalendarRouteProp>(
       queryFn: fetchList,
       enabled: true,
     });
+    console.log(data);
+    const [isEventFormVisible, setEventFormVisible] = useState(false);
+    const [initialDate, setInitialDate] = useState({ start: '', end: '' });
 
     const bottomSheetRef = useRef<BottomSheet>(null);
     const [eventForm, setEventForm] = useState<EventForm>(eventEmptyState);
+
+    const toggleEventForm = ({
+      start,
+      end,
+    }: {
+      start: string;
+      end: string;
+    }) => {
+      setEventFormVisible((prev) => !prev);
+      setInitialDate({ start, end });
+    };
 
     const handleEventChange = (event: OnCreateEventResponse) => {
       const {
@@ -72,13 +90,15 @@ const Calendar = forwardRef<CalendarKitHandle, CalendarRouteProp>(
         start,
         end,
       }));
-      onFormToggle({ start, end });
+      toggleEventForm({ start, end });
       bottomSheetRef.current?.expand();
     };
 
     const onDragEventEnd = (event: OnEventResponse) => {
       const { start, end, id } = event;
-      const eventToUpdate = data?.find(({ id: eventId }) => eventId === id) as EventItem;
+      const eventToUpdate = data?.find(
+        ({ id: eventId }) => eventId === id,
+      ) as EventItem;
 
       if (!eventToUpdate) return;
       setEventForm((prev) => ({
@@ -90,17 +110,21 @@ const Calendar = forwardRef<CalendarKitHandle, CalendarRouteProp>(
         end: end.dateTime || '',
         notes: eventToUpdate.notes,
       }));
-      // onFormToggle({ start: start.dateTime, end: end.dateTime });
+
+      toggleEventForm({ start: start.dateTime || '', end: end.dateTime || '' });
     };
 
     const handleDateChange = (date: string) => {
       const { onMonthChange } = params;
-      onMonthChange(dayjs(date).locale('pl').format(DATE_FORMAT_FULL_MONTH_WITH_YEAR));
+      onMonthChange(
+        dayjs(date).locale('pl').format(DATE_FORMAT_FULL_MONTH_WITH_YEAR),
+      );
     };
+
     useEffect(() => {
       const unsubscribe = navigation.addListener('state', () => {
         refetch();
-        onFormToggle({});
+        // onFormToggle({});
         bottomSheetRef.current?.close();
       });
 
@@ -108,23 +132,30 @@ const Calendar = forwardRef<CalendarKitHandle, CalendarRouteProp>(
     }, [dataUpdatedAt, refetch, navigation]);
 
     return (
-      <CalendarContainer
-        ref={ref}
-        allowDragToEdit
-        events={data}
-        hideWeekDays={mode === withoutWeekends ? [5, 6] : []}
-        numberOfDays={mode}
-        onDateChanged={handleDateChange}
-        onDragEventEnd={onDragEventEnd}
-        onDragCreateEventEnd={handleEventChange}
-        onRefresh={fetchList}
-        overlapType="no-overlap"
-        allowDragToCreate={!Boolean(currentBottomSheetIndex)}
-        {...calendarContainerConfig}
-      >
-        <CalendarHeader />
-        <CalendarBody showNowIndicator />
-      </CalendarContainer>
+      <>
+        <CalendarContainer
+          ref={ref}
+          events={data}
+          hideWeekDays={mode === withoutWeekends ? [5, 6] : []}
+          numberOfDays={mode}
+          onDateChanged={handleDateChange}
+          onDragEventEnd={onDragEventEnd}
+          onDragCreateEventEnd={handleEventChange}
+          onRefresh={fetchList}
+          allowDragToCreate={!Boolean(currentBottomSheetIndex)}
+          {...calendarContainerConfig}
+        >
+          <CalendarHeader />
+          <CalendarBody showNowIndicator />
+        </CalendarContainer>
+        {isEventFormVisible && (
+          <CreateEventForm
+            initialDateState={initialDate}
+            toggleFormVisibility={() => toggleEventForm({ end: '', start: '' })}
+            onEventCreateRequest={async () => {}}
+          />
+        )}
+      </>
     );
   },
 );

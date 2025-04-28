@@ -1,12 +1,12 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import { PORT } from './config/env';
 import eventRouter from './routes/eventRoutes';
 import clientRouter from './routes/clientRoutes';
 import companyRouter from './routes/companyRouter';
 import authRouter from './routes/authRoutes';
-import { CustomError } from './services/userService';
 import { authenticateToken } from './middleware/authMiddleWare';
 import { errorMiddleware } from './middleware/errorMiddleware';
+import dashboardRouter from './routes/dashboardRouter';
 
 const app = express();
 
@@ -24,6 +24,7 @@ app.use(authenticateToken);
 app.use('/event', eventRouter);
 app.use('/client', clientRouter);
 app.use('/company', companyRouter);
+app.use('/dashboard', dashboardRouter);
 
 app.use(errorMiddleware);
 

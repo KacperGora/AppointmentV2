@@ -6,9 +6,17 @@ import jwt from 'jsonwebtoken';
 
 export class CustomError extends Error {
   statusCode: number;
-  constructor(message: string, statusCode: number) {
+  code: string;
+
+  constructor(message: string, statusCode: number, code: string) {
     super(message);
     this.statusCode = statusCode;
+    this.code = code;
+  }
+
+  static fromKey(errorKey: keyof typeof errors): CustomError {
+    const error = errors[errorKey];
+    return new CustomError(error.message, error.status, error.code);
   }
 }
 
@@ -28,10 +36,10 @@ export type RegisterSuccess = {
 const { USER_ALREADY_EXISTS, USERNAME_AND_PASSWORD_REQUIRED, INTERNAL_SERVER_ERROR, INVALID_CREDENTIALS } = errors;
 export const userService = {
   async registerUser(username: string, password: string): Promise<RegisterSuccess> {
-    if (!username || !password) throw new CustomError(USERNAME_AND_PASSWORD_REQUIRED.code, 400);
+    if (!username || !password) throw new CustomError(USERNAME_AND_PASSWORD_REQUIRED.message, 400, USERNAME_AND_PASSWORD_REQUIRED.code);
 
     const existingUser = await findUserByKey('username', username);
-    if (existingUser) throw new CustomError(USER_ALREADY_EXISTS.code, 400);
+    if (existingUser) throw new CustomError(USER_ALREADY_EXISTS.message, 400, USER_ALREADY_EXISTS.code);
 
     const hashedPassword = await hashUserPassword(password);
     const newUser = await createUser({ username, password: hashedPassword });
@@ -41,7 +49,7 @@ export const userService = {
     try {
       await saveRefreshToken(newUser.id, refreshToken);
     } catch (error) {
-      throw new CustomError(INTERNAL_SERVER_ERROR.code, 500);
+       throw CustomError.fromKey('INTERNAL_SERVER_ERROR');
     }
 
     return {
@@ -54,18 +62,17 @@ export const userService = {
 
   async loginUser(username: string, password: string): Promise<LoginSuccess> {
     const user = await findUserByKey('username', username);
-    if (!user) throw new CustomError(INVALID_CREDENTIALS.message, 401);
+    if (!user) throw new CustomError(INVALID_CREDENTIALS.message, 401, INVALID_CREDENTIALS.code);
 
     const passwordMatch = await compareUserPassword(password, user.password as string);
-    if (!passwordMatch) throw new CustomError(INVALID_CREDENTIALS.message, 401);
-
+    if (!passwordMatch) throw CustomError.fromKey('INVALID_CREDENTIALS');
     const token = generateAccessToken(user.id);
     const refreshToken = generateRefreshToken(user.id);
 
     try {
       await saveRefreshToken(user.id, refreshToken);
     } catch (error) {
-      throw new CustomError('Failed to save refresh token', 500);
+      throw CustomError.fromKey('');
     }
 
     return {
@@ -80,28 +87,28 @@ export const userService = {
     try {
       const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_KEY as string) as jwt.JwtPayload;
       const user = await findUserByKey('id', decoded.id);
-      if (!user || user.refresh_token !== refreshToken) throw new CustomError(errors.INVALID_CREDENTIALS.message, 401);
+      if (!user || user.refresh_token !== refreshToken) throw CustomError.fromKey('INVALID_CREDENTIALS');
 
       return generateAccessToken(user.id);
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
-        throw new CustomError('Refresh token expired', 401);
+        throw new CustomError('Refresh token expired', 401, 'TOKEN_EXPIRED');
       }
-      throw new CustomError(errors.INVALID_CREDENTIALS.message, 401);
+      throw CustomError.fromKey('INVALID_CREDENTIALS');
     }
   },
   async logoutUser(userId: string) {
     try {
       await logoutUser(userId);
     } catch (error) {
-      throw new CustomError(errors.INTERNAL_SERVER_ERROR.message, errors.INTERNAL_SERVER_ERROR.status);
+      throw CustomError.fromKey('INTERNAL_SERVER_ERROR');
     }
   },
   async changePassword(userId: string, newPassword: string) {
     try {
       await changeUserPassword(userId, newPassword);
     } catch (error) {
-      throw new CustomError(errors.INVALID_CREDENTIALS.message, 401);
+      throw CustomError.fromKey('INVALID_CREDENTIALS');
     }
   },
 };

@@ -17,6 +17,7 @@ const Input: React.FC<TextInputWithCounterProps> = ({
   value,
   onChangeText,
   onBlur = () => {},
+  onFocus = () => {},
   maxLength,
   multiline = false,
   style = {},
@@ -40,6 +41,7 @@ const Input: React.FC<TextInputWithCounterProps> = ({
         placeholder={placeholder}
         value={value}
         onChangeText={onChangeText}
+        onFocus={onFocus}
         onBlur={(v) => onBlur(v.nativeEvent.text)}
         maxLength={maxLength}
         multiline={multiline}

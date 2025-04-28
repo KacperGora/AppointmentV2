@@ -17,7 +17,6 @@ export const styles = StyleSheet.create({
     color: colors.textPrimary,
     fontWeight: beautyTheme.fontWeight.medium,
   },
-
   dateTimeContainer: {
     marginBottom: 8,
   },
@@ -39,19 +38,5 @@ export const styles = StyleSheet.create({
   },
   formContainer: {
     gap: beautyTheme.spacing.l,
-  },
-  timeLabelContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: beautyTheme.spacing.s,
-    marginBottom: beautyTheme.spacing.xl,
-    backgroundColor: beautyTheme.colors.surfaceDisabled,
-    borderRadius: beautyTheme.shape.borderRadius,
-    padding: beautyTheme.spacing.m,
-  },
-  timeLabel: {
-    color: beautyTheme.colors.onBackground,
-    fontWeight: 'bold',
-    fontSize: beautyTheme.fontSizes.medium,
   },
 });

@@ -30,7 +30,8 @@ const LoginScreen = () => {
       await loginSuccessHandler(data, setIsLoggedIn, setUserId);
     },
     onError: (err) => {
-      setForm({ username: '', password: '' });
+      console.log(err)
+      // setForm({ username: '', password: '' });
       showNotification(t(`error.${err.code}`), 'error');
     },
   });

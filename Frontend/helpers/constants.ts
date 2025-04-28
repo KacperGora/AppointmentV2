@@ -28,4 +28,5 @@ export const SCREEN_NAME_CONFIG = {
   CompanyDashboard: 'CompanyDashboard' as const,
   CompanyEmployees: 'CompanyEmployees' as const,
   CompanyServices: 'CompanyServices' as const,
+  Dashboard: 'Dashboard' as const
 };

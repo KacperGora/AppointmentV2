@@ -1,4 +1,4 @@
-import { getDataBaseServices, saveDatabaseService, Service, deleteDatabaseService } from '../models/Service';
+import { getDatabaseServiceList, saveDatabaseService, Service, deleteDatabaseService } from '../models/Service';
 import { ORDER_DIRECTION } from '../types/queryTypes';
 import { SORT_ORDER_ENUM } from '../utils/enums';
 
@@ -11,7 +11,7 @@ export const companyService = {
     if (![ASC, DESC].includes(sortOrder)) {
       throw new Error('Invalid sortOrder');
     }
-    return await getDataBaseServices(userId, { search, sortBy, sortOrder });
+    return await getDatabaseServiceList(userId, { search, sortBy, sortOrder });
   },
 
   async createService(newService: Service) {

@@ -25,7 +25,7 @@ const ANIMATION_CONFIG = {
 
 interface CustomBottomSheetPropsType {
   isVisible: boolean;
-  onClose: () => void;
+  onClose: () => void | undefined;
   children: React.ReactNode;
   minimizedContent?: React.ReactNode;
   snapPoints?: readonly number[];
@@ -47,7 +47,7 @@ const CustomBottomSheet: React.FC<CustomBottomSheetPropsType> = ({
   const scrollOffset = useRef(0);
   const isContentScrollable = useRef(false);
   const bottomSheetSnapPoints = snapPoints || SNAP_POINTS;
-
+  console.log(currentSnapIndex);
   const snapTo = useCallback(
     (index: number) => {
       if (index < 0 || index >= bottomSheetSnapPoints.length) return;

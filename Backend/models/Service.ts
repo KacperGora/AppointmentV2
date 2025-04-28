@@ -24,7 +24,7 @@ export const saveDatabaseService = async (service: Service) => {
   }
 }
 
-export const getDataBaseServices = async (userId: string, query: { search?: string; sortBy?: string; sortOrder?: 'ASC' | 'DESC' }) => {
+export const getDatabaseServiceList = async (userId: string, query: { search?: string; sortBy?: string; sortOrder?: 'ASC' | 'DESC' }) => {
   let dbQuery = buildSelectQueryForTable('services')
   const values: any[] = [userId]
   if (Boolean(query.search)) {

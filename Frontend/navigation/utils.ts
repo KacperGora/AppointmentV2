@@ -2,8 +2,8 @@ import { Dimensions } from 'react-native';
 
 import { HOUR_CELL_WIDTH } from '@helpers';
 import { DrawerNavigationOptions } from '@react-navigation/drawer';
-import { CALENDAR_ENUM } from '@views';
 import { beautyTheme, colors } from 'theme/theme';
+import { CALENDAR_ENUM } from '@views';
 
 const { day, fullWeek, withoutWeekends } = CALENDAR_ENUM;
 const width = Dimensions.get('window').width - HOUR_CELL_WIDTH;

@@ -15,11 +15,10 @@ const today = dayjs().format('DD');
 
 type TopbarProps = {
   onPress: any;
-  date: string;
   displayedCalendarMonth: string;
 };
 
-const Topbar: React.FC<TopbarProps> = ({ onPress, date, displayedCalendarMonth }) => {
+const Topbar: React.FC<TopbarProps> = ({ onPress, displayedCalendarMonth }) => {
   const { setIsLoggedIn, userId } = useContext(AuthContext) as AuthContextType;
 
   const handleLogout = async () => {
@@ -34,9 +33,11 @@ const Topbar: React.FC<TopbarProps> = ({ onPress, date, displayedCalendarMonth }
       <TouchableOpacity>
         <Text style={styles.monthText}>{displayedCalendarMonth}</Text>
       </TouchableOpacity>
-      <Pressable onPress={onPress} style={styles.todayWrapper}>
-        <Text style={styles.todayText}>{today}</Text>
-      </Pressable>
+      {onPress && (
+        <Pressable onPress={onPress} style={styles.todayWrapper}>
+          <Text style={styles.todayText}>{today}</Text>
+        </Pressable>
+      )}
       <View style={{ flexDirection: 'row', gap: 12 }}></View>
       <Pressable style={styles.logoutButton} onPress={handleLogout}>
         <Icon name="logout" size={24} color={beautyTheme.colors.primary} />
